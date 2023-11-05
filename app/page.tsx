@@ -14,7 +14,6 @@ export default function Home() {
     event.preventDefault();
     const time = 1000;
 
-    const prompt = inputContent;
     setMessages((messages) => [
       ...messages,
       { role: "user", content: inputContent },
@@ -25,7 +24,7 @@ export default function Home() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ prompt }),
+      body: JSON.stringify(messages),
     });
 
     if (response.status === 400) {
@@ -49,18 +48,10 @@ export default function Home() {
       setError(data.statusText);
       setTimeout(() => setError(""), time);
     }
+    const data = await response.json();
+    console.log(data);
 
-    const data = response.body;
-
-    if (!data) {
-      return;
-    }
-
-    const reader = data.getReader();
-    const decoder = new TextDecoder();
-    let done = false;
-
-    const streamedData: string[] = [];
+    /* const streamedData: string[] = [];
 
     while (!done) {
       const { value, done: doneReading } = await reader.read();
@@ -70,28 +61,22 @@ export default function Home() {
       streamedData.push(chunkValue);
     }
 
-    const finalData = streamedData.join("");
+    const finalData = streamedData.join(""); */
 
-    const sanitisedData = sanitise(finalData);
+    //const sanitisedData = sanitise(finalData);
     setMessages((messages) => [
       ...messages,
-      { role: "assistant", content: `${JSON.stringify(sanitisedData)}` },
+      { role: "assistant", content: data.content },
     ]);
-
-    if (sanitisedData === "not valid object") {
-      setError("OpenAI returned invalid JSON \n Try re-sending request.");
-      setTimeout(() => setError(""), time + 1500);
-      setStream("");
-      return;
-    }
 
     setStream("");
   };
+
   return (
-    <div className="flex flex-col h-screen w-screen items-center justify-between gap-4">
-      <h1 className="p-10">Tell us about your company:</h1>
+    <div className="flex flex-col h-screen w-screen items-center justify-between gap-4 p-3">
+      <h1 className="p-10 text-xl">Tell us about your company:</h1>
       <form
-        className="flex w-full p-10 gap-2 flex-col items-center justify-center"
+        className="flex w-full p-10 gap-4 flex-col items-center justify-center"
         onSubmit={onSubmit}
       >
         {messages.map((message, index) =>
@@ -107,10 +92,10 @@ export default function Home() {
         <textarea
           value={inputContent}
           onChange={(e) => setInputContent(e.target.value)}
-          className="text-black text-lg w-full h-fit min-h-[150px] bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+          className="text-gray-50 text-lg w-full h-fit min-h-[150px] bg-gray-500 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
         />
         {error && <p>{error}</p>}
-        <button className="bg-blue-500 p-2 rounded-lg" type="submit">
+        <button className="bg-blue-900 p-2 rounded-lg self-end" type="submit">
           SUBMIT
         </button>
       </form>
