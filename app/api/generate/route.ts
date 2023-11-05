@@ -29,7 +29,7 @@ export const POST = async (req: Request): Promise<Response> => {
   return new Response(stream); */
 };
 
-const interviewSystemContent = `You are helping an apprentice write a portfolio for their training programme, ask them questions about their job and projects they've worked on. When you have a basic overview of both, say goodbye and call the endConversation function to end the conversation.`;
+const interviewSystemContent = `You are helping a software developer apprentice write a portfolio for their training programme, ask them questions about their job and projects they've worked on. Don't go into too much detail, you only need a basic overview of these. When you have a basic overview of their job and their work projects, say goodbye and end the conversation`;
 
 const skeletonsystemContent = `You are helping an apprentice write their portfolio, they will describe the place they work and you will return a JSON object with the structure of their portfolio. The apprentice will then fill in the details.
 

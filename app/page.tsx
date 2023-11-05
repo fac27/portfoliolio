@@ -4,7 +4,13 @@ import sanitise from "../utils/sanitise";
 import { ChatGPTMessage } from "../utils/openAIStream";
 
 export default function Home() {
-  const [messages, setMessages] = useState<ChatGPTMessage[]>([]);
+  const [messages, setMessages] = useState<ChatGPTMessage[]>([
+    {
+      role: "assistant",
+      content:
+        "Hello, so I hear you're working on a software development apprenticeship, tell me a bit about the company you work for.",
+    },
+  ]);
   const [inputContent, setInputContent] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [stream, setStream] = useState<string | null>(null);
@@ -74,11 +80,10 @@ export default function Home() {
 
   return (
     <div className="flex flex-col h-screen w-screen items-center justify-between gap-4 p-3">
-      <h1 className="p-10 text-xl">Tell us about your company:</h1>
-      <form
-        className="flex w-full p-10 gap-4 flex-col items-center justify-center"
-        onSubmit={onSubmit}
-      >
+      <div className="flex flex-col items-start gap-4 overflow-scroll">
+        <h1 className="p-10 text-xl self-center">
+          Let&apos;s get some info for your Skeleton
+        </h1>
         {messages.map((message, index) =>
           message.role === "user" ? (
             <UserMessage key={index} content={message.content} />
@@ -86,9 +91,11 @@ export default function Home() {
             <AssistantMessage key={index} content={message.content} />
           )
         )}
-        <div>
-          <p className="text-green-200 font-mono">{stream}</p>
-        </div>
+      </div>
+      <form
+        className="flex flex-col w-full p-10 gap-4 items-center justify-center"
+        onSubmit={onSubmit}
+      >
         <textarea
           value={inputContent}
           onChange={(e) => setInputContent(e.target.value)}
@@ -104,13 +111,13 @@ export default function Home() {
 }
 
 const UserMessage = ({ content }: { content: string }) => (
-  <div className="p-4 rounded-xl border shadow-sm border-gray-800 bg-slate-600 self-end">
+  <div className="p-4 rounded-xl border shadow-sm border-gray-800 bg-slate-600 self-end max-w-[75%]">
     <p className="text-white">{content}</p>
   </div>
 );
 
 const AssistantMessage = ({ content }: { content: string }) => (
-  <div className="p-4 rounded-xl border shadow-sm border-gray bg-slate-900 self-baseline">
+  <div className="p-4 rounded-xl border shadow-sm border-gray bg-slate-900 self-baseline max-w-[75%]">
     <p className="text-green-400 font-mono">{content}</p>
   </div>
 );
