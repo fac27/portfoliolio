@@ -30,7 +30,7 @@ export default function Home() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(messages),
+      body: JSON.stringify({ role: "user", content: inputContent }),
     });
 
     if (response.status === 400) {

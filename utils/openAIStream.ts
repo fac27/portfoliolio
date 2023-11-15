@@ -11,7 +11,7 @@ import { ChatCompletionCreateParams } from "openai/resources/index.mjs";
 // typescript with newer features like function calls. Right now I've installed the openai library
 // just to get access to the Function interface.
 
-export type ChatGPTAgent = "user" | "system" | "assistant";
+export type ChatGPTAgent = "user" | "system" | "assistant" | string;
 
 export interface ChatGPTMessage {
   role: ChatGPTAgent;

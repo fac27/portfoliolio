@@ -5,22 +5,30 @@ if (!process.env.OPENAI_API_KEY) {
   throw new Error("Missing env var from OpenAI");
 }
 
+const interviewSystemContent = `You are helping a software developer apprentice write a portfolio for their training programme, ask them questions about their job and projects they've worked on. Don't go into too much detail, you only need a basic overview of these. When you have a basic overview of their job and their work projects, say goodbye and end the conversation`;
+
+let conversationHistory = [
+  {
+    role: "system",
+    content: interviewSystemContent
+  }
+];
+
 export const POST = async (req: Request): Promise<Response> => {
-  const messages = await req.json();
+  const newMessage = await req.json();
+
+  conversationHistory.push(newMessage);
 
   const payload: OpenAIStreamPayload = {
     model: "gpt-3.5-turbo",
-    messages: [
-      { role: "system", content: interviewSystemContent },
-      ...messages,
-    ],
+    messages: conversationHistory,
     temperature: 1,
     top_p: 1,
     frequency_penalty: 0,
     presence_penalty: 0,
     max_tokens: 1000,
     stream: true,
-    n: 1,
+    n: 1
   };
 
   const response = await openAINotStreamed(payload);
@@ -28,8 +36,6 @@ export const POST = async (req: Request): Promise<Response> => {
   /* const stream = await OpenAIStream(payload);
   return new Response(stream); */
 };
-
-const interviewSystemContent = `You are helping a software developer apprentice write a portfolio for their training programme, ask them questions about their job and projects they've worked on. Don't go into too much detail, you only need a basic overview of these. When you have a basic overview of their job and their work projects, say goodbye and end the conversation`;
 
 const skeletonsystemContent = `You are helping an apprentice write their portfolio, they will describe the place they work and you will return a JSON object with the structure of their portfolio. The apprentice will then fill in the details.
 
