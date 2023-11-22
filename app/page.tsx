@@ -102,7 +102,7 @@ export default function Home() {
           className="text-gray-50 text-lg w-full h-fit min-h-[150px] bg-gray-500 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
         />
         {error && <p>{error}</p>}
-        <button className="bg-blue-900 p-2 rounded-lg self-end" type="submit">
+        <button className="bg-blue-900 p-2 rounded-lg self-end disabled:bg-zinc-600" type="submit" disabled={messages[messages.length - 1].role === 'user'} >
           SUBMIT
         </button>
       </form>
