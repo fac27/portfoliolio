@@ -1,10 +1,8 @@
 "use client";
-import { useState } from "react";
-import sanitise from "../utils/sanitise";
-import { ChatGPTMessage } from "../utils/openAIStream";
+import { useState, useEffect } from "react";
 
 export default function Home() {
-  const [messages, setMessages] = useState<ChatGPTMessage[]>([
+  const [messages, setMessages] = useState([
     {
       role: "assistant",
       content:
@@ -13,69 +11,72 @@ export default function Home() {
   ]);
   const [inputContent, setInputContent] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
-  const [stream, setStream] = useState<string | null>(null);
+  const [assistantId, setAssistantId] = useState(null);
+  const [threadId, setThreadId] = useState(null);
+
+  useEffect(() => {
+    const createAssistant = async () => {
+      const response = await fetch("/api/create-assistant", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await response.json();
+      setAssistantId(data.assistantId);
+      setThreadId(data.threadId);
+    };
+
+    createAssistant();
+  }, []);
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    setStream("");
     event.preventDefault();
-    const time = 1000;
+    setError(null);
 
-    setMessages((messages) => [
-      ...messages,
+    if (!assistantId) {
+      setError("Assistant is not initialised.");
+      return;
+    }
+
+    setMessages((currentMessages) => [
+      ...currentMessages,
       { role: "user", content: inputContent },
     ]);
-    setInputContent("");
-    const response = await fetch("/api/generate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(messages),
-    });
 
-    if (response.status === 400) {
-      setError(response.statusText);
-      setTimeout(() => setError(""), time);
-      return;
+    try {
+
+      const userMessage = inputContent;
+      setInputContent("");
+
+      const response = await fetch("/api/submit-message", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          assistantId,
+          threadId,
+          message: { role: "user", content: userMessage },
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const responseData = await response.json();
+
+      setMessages((currentMessages) => [
+        ...currentMessages,
+        responseData.messages[0],
+      ]);
+    } catch (error) {
+      console.error("There was an error submitting the message: ", error);
+      setError("There was an error handling your request.");
+
+      setTimeout(() => setError(null), 5000);
     }
-
-    if (response.status === 404) {
-      setError("404 Not Found");
-      setTimeout(() => setError(""), time);
-      return;
-    }
-    if (response.status === 500) {
-      setError("API Key Depracated, contact developers.");
-      setTimeout(() => setError(""), time);
-      return;
-    }
-    if (response.status !== 200) {
-      const data = await response.json();
-      setError(data.statusText);
-      setTimeout(() => setError(""), time);
-    }
-    const data = await response.json();
-    console.log(data);
-
-    /* const streamedData: string[] = [];
-
-    while (!done) {
-      const { value, done: doneReading } = await reader.read();
-      done = doneReading;
-      const chunkValue = decoder.decode(value);
-      setStream((prev) => prev + chunkValue);
-      streamedData.push(chunkValue);
-    }
-
-    const finalData = streamedData.join(""); */
-
-    //const sanitisedData = sanitise(finalData);
-    setMessages((messages) => [
-      ...messages,
-      { role: "assistant", content: data.content },
-    ]);
-
-    setStream("");
   };
 
   return (
@@ -89,7 +90,7 @@ export default function Home() {
             <UserMessage key={index} content={message.content} />
           ) : (
             <AssistantMessage key={index} content={message.content} />
-          )
+          ),
         )}
       </div>
       <form
