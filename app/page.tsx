@@ -1,6 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
 
+const assistantArray = [
+  { name: "skeleton", id: "asst_3aXwBiUZFqzcoSLUdGeFLGiG" },
+];
+
 export default function Home() {
   const [messages, setMessages] = useState([
     {
@@ -11,23 +15,25 @@ export default function Home() {
   ]);
   const [inputContent, setInputContent] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
-  const [assistantId, setAssistantId] = useState(null);
+  //initialise assistant to skeleton assistant, later we will want to change this so we'll keep it in state
+  const [assistantId, setAssistantId] = useState<string | null>(
+    assistantArray[0].id
+  );
   const [threadId, setThreadId] = useState(null);
 
   useEffect(() => {
-    const createAssistant = async () => {
-      const response = await fetch("/api/create-assistant", {
+    const createThread = async () => {
+      const response = await fetch("/api/create-thread", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
       });
       const data = await response.json();
-      setAssistantId(data.assistantId);
       setThreadId(data.threadId);
     };
 
-    createAssistant();
+    createThread();
   }, []);
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -45,7 +51,6 @@ export default function Home() {
     ]);
 
     try {
-
       const userMessage = inputContent;
       setInputContent("");
 
@@ -90,7 +95,7 @@ export default function Home() {
             <UserMessage key={index} content={message.content} />
           ) : (
             <AssistantMessage key={index} content={message.content} />
-          ),
+          )
         )}
       </div>
       <form
