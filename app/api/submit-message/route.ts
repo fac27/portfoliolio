@@ -38,10 +38,10 @@ export const POST = async (req: Request): Promise<Response> => {
 
 		const messages = await openai.beta.threads.messages.list(threadId)
 
-		const formattedMessages = messages.data.map((msg) => ({
-			role: msg.role,
-			content: msg.content[0].text.value,
-		}))
+    const formattedMessages = messages.data.map((msg) => ({
+      role: msg.role,
+      content: 'text' in msg.content[0] ? msg.content[0].text.value : '',
+    }));
 
 		const responseData = JSON.stringify({ messages: formattedMessages })
 
